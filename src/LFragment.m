@@ -13,7 +13,7 @@ classdef LFragment < handle
         function cleaned_text = clean_fragment(~, raw)
             token_starts = {LCompiler.VAR_TOKEN_START LCompiler.BLOCK_TOKEN_START};
             
-            if length(raw) >= 2 && find(strcmp(raw(1:2), token_starts))
+            if length(raw) >= 2 && any(strcmp(raw(1:2), token_starts))
                 cleaned_text = strtrim(raw(3:end-2));
             else 
                 cleaned_text = raw;
