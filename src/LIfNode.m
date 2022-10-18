@@ -1,57 +1,54 @@
-
 classdef LIfNode < LNode
-   
-    properties (Constant)        
-        SUPPORTED_OPERATORS = {'<' '>' '<=' '>=' '==' '~='};
-    end
+    %LIFNODE A node that evaluates either branch depending on the statement.
+    %
+    %    {% if statement %}
+    %        ...
+    %    {% else %}
+    %        ...
+    %    {% end %}
+    %
+    % The is no ELSEIF node for now. For multiple branches, nest nodes:
+    %
+    %    {% if statement %}
+    %        ...
+    %    {% else %}{% if statement %}
+    %        ...
+    %    {% else %}
+    %        ...  
+    %    {% end %}{% end %}
+    %
+    % See also LElseNode, LNode
     
     properties
-        expression = '';
-        
-        if_branch = cell(0);
-        else_branch = cell(0);
+        Expression (1,1) string
+        OnIfBranch = []
     end
     
-    methods 
+    methods
         function self = LIfNode(fragment)
-            self@LNode(fragment);
-            self.creates_scope = true;
-        end
-
-        function process_fragment(self, fragment)
-            self.expression = fragment;
+            self.CreatesScope = true;
+            self.Expression = fragment;
         end
         
-        % Problem: the IF block needs to have the others as children
         function str = render(self, context)
-            if eval_with_context(self.expression, context)
-                str = self.render_children(context, self.if_branch);
-            else 
-                str = self.render_children(context, self.else_branch);
-            end            
-        end
-        
-        function enter_scope(~)
-            % We don't have to do anything here.
-        end
-        
-        function exit_scope(self)
-            % We now have enough information to figure out what to print if the
-            % expression evaluates to true or false. 
-            
-            on_if_branch = true;
-            for k = 1:length(self.children)
-                if isa(self.children{k}, 'LElseNode')
-                    on_if_branch = false;
+            str = "";
+            if evalin_struct(self.Expression, context)
+                for k = 1:numel(self.Children)
+                    if isa(self.Children{k}, "LElseNode")
+                        break
+                    end
+                    str = str + render(self.Children{k}, context);
                 end
-                
-                if on_if_branch; 
-                    self.if_branch = {self.if_branch{:}, self.children{k}};
-                else
-                    self.else_branch = {self.else_branch{:}, self.children{k}};
+            else
+                skip = true;
+                for k = 1:numel(self.Children)
+                    if skip
+                        skip = not(isa(self.Children{k}, "LElseNode"));
+                        continue
+                    end
+                    str = str + render(self.Children{k}, context);
                 end
             end
         end
     end
-    
 end

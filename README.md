@@ -37,7 +37,7 @@ To print the value of a variable in your template insert a `{{ varname }}` block
     ans = 
     Hello World!
 
-Internally the template renderer will `eval` the content of the variable block so you can perform indexing operations on the variable or even access a value in a `containers.Map`. You can also use this to call functions but to aid readability I encourage you to use a `call` block. 
+Internally the template renderer will `eval` the content of the variable block so you can perform indexing operations on the variable or even access a value in a `containers.Map`. You can also use this to call functions.
 
     >> LTemplate('{{ myarray(3:5) }}').render(struct('myarray', 1:10))
     ans = 
@@ -92,29 +92,3 @@ You can also iterate over items in a struct.
     ans = Mark, Toby, Jennifer, 
 
 It even works with map objects ?
-
-## Call blocks
-
-Sometimes instead of simply reading a variable you want to call a function in your template. You could use a variable block: 
-
-    {{ my_function(my_variable) }}
-
-But this could also be an array or map access. To make your intent clear use a `call` block: 
-
-    {% call my_function(my_variable) %}
-
-The major difference between call blocks and variable expansions is that the call block will not try to convert the output to a string. You must do it manually.
-
-
-## Printing a litteral '{'
-
-In most cases you should be able to print '{' just fine. It only becomes a problem if you need to do something like this : 
-
-    >> tpl = LTemplate('\definecolor{{{color}}}').render(struct('color', 'mycolor'))
-
-This will produce an error because the template engine will look for the variable '{color}'. To get around this we ca use the litteral '{': '{#'
-
-    >> tpl = LTemplate('\definecolor{#{{color}}#}').render(struct('color', 'mycolor'))
-    ans = 
-    \definecolor{mycolor}
-
