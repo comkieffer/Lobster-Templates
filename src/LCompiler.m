@@ -6,7 +6,7 @@ classdef LCompiler < handle
     end
     
     properties (Access = private, Constant)
-        TOKEN_REGEX = "\{\{(?![\{%#])(.*?)(?<![\}%#])\}\}|\{%(.*?)%\}|\{#(.*?)#\}"
+        TOKEN_REGEX = "\{\{(?![\{%#])\s*(.*?)\s*(?<![\}%#])\}\}|\{%\s*(.*?)\s*%\}|\{#\s*(.*?)\s*#\}"
     end
     
     methods
