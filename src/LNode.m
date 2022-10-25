@@ -3,17 +3,21 @@ classdef (Abstract) LNode < handle
     %
     % See also LAssertNode, LElseNode, LForNode, LIfNode, LIncludeNode,
     %          LLetNode, LRoot, LTextNode, LVarNode
-    
+
     properties
         CreatesScope (1,1) logical = false
         Children (1,:) cell
     end
-    
+
     methods
+        function end_scope(~)
+            % stub
+        end
+
         function str = render(self, context)
             str = render_children(self, context);
         end
-        
+
         function str = render_children(self, context)
             str = "";
             for k = 1:numel(self.Children)

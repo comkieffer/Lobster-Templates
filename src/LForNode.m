@@ -9,26 +9,26 @@ classdef LForNode < LNode
     % The loop will iterate over all elements and render its children for each.
     %
     % See also LNode
-    
+
     properties
         LHS (1,1) string
         RHS (1,1) string
     end
-    
+
     methods
         function self = LForNode(fragment)
             self.CreatesScope = true;
-            matches = regexp(fragment, "^(.*?) (?:in|=) (.*)$", "tokens");
-            if length(matches{1}) ~= 2
+            matches = regexp(fragment, "^\s*(?<lhs>.*?)\s*(?:in|=)\s*(?<rhs>.*)\s*$", "names");
+            if isempty(matches)
                 error("Lobster:TemplateSyntaxError", "{%% for %s %%} is invalid syntax.", fragment);
             end
-            self.LHS = strtrim(matches{1}{1});
-            self.RHS = matches{1}{2};
+            self.LHS = matches.lhs;
+            self.RHS = matches.rhs;
         end
 
         function str = render(self, context)
             collection = evalin_struct(self.RHS, context);
-            
+
             str = "";
             n = numel(collection);
             isCell = iscell(collection);

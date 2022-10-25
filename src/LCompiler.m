@@ -1,33 +1,34 @@
 classdef LCompiler < handle
-    
+
     properties
         Template (1,1) string
         Debug (1,1) logical
     end
-    
+
     properties (Access = private, Constant)
         TOKEN_REGEX = "\{\{(?![\{%#])\s*(.*?)\s*(?<![\}%#])\}\}|\{%\s*(.*?)\s*%\}|\{#\s*(.*?)\s*#\}"
     end
-    
+
     methods
         function self = LCompiler(template, debug)
             arguments
                 template (1,:) string
                 debug (1,1) logical = false
             end
-            
+
             self.Template = strjoin(template, newline);
             self.Debug = debug;
         end
-        
+
         function root = compile(self)
             stack = {LRoot()};
             debug = "";
-            
+
             for fragment = self.make_fragments()
                 switch fragment.Type
                 case LFRAGMENT_TYPE.BLOCK_END
                     assert(numel(stack) > 1, "Lobster:NestingError", "Too many {%%end%%} in template. Syntax tree:\n\n%s", debug);
+                    end_scope(stack{end});
                     stack(end) = [];
                     debug = debug + ")";
                 case LFRAGMENT_TYPE.TEXT
@@ -49,21 +50,21 @@ classdef LCompiler < handle
                     end
                 end
             end
-            
+
             if not(isscalar(stack))
                 error("Lobster:NestingError", "Missing {%%end%%} in template. Syntax tree:\n\n%s", debug);
             end
             root = stack{1};
         end
     end
-    
+
     methods (Access = private)
         function fragments = make_fragments(self)
             [vars, text] = regexp(self.Template, self.TOKEN_REGEX, "match", "split");
             vars = arrayfun(@create_fragment, vars);
             text = arrayfun(@(t) LFragment(LFRAGMENT_TYPE.TEXT, t), text);
             fragments = [text(1), reshape([vars; text(2:end)], 1, [])];
-            
+
             function fragment = create_fragment(raw)
                 if startsWith(raw, "{{")
                     type = LFRAGMENT_TYPE.VAR;
@@ -79,4 +80,3 @@ classdef LCompiler < handle
         end
     end
 end
-

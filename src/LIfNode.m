@@ -3,51 +3,59 @@ classdef LIfNode < LNode
     %
     %    {% if statement %}
     %        ...
+    %    {% elseif statement %}
+    %        ...
     %    {% else %}
     %        ...
     %    {% end %}
     %
-    % The is no ELSEIF node for now. For multiple branches, nest nodes:
-    %
-    %    {% if statement %}
-    %        ...
-    %    {% else %}{% if statement %}
-    %        ...
-    %    {% else %}
-    %        ...  
-    %    {% end %}{% end %}
-    %
-    % See also LElseNode, LNode
-    
+    % See also LElseifNode, LElseNode, LNode
+
     properties
-        Expression (1,1) string
-        OnIfBranch = []
+        Expressions (1,:) string
+        ChildGroups (1,:) cell
     end
-    
+
     methods
         function self = LIfNode(fragment)
             self.CreatesScope = true;
-            self.Expression = fragment;
+            self.Expressions = fragment;
+            self.ChildGroups = {{}};
         end
-        
+
+        function end_scope(self)
+            iGroup = 1;
+            for k = 1:numel(self.Children)
+                child = self.Children{k};
+                if isa(child, "LElseifNode")
+                    iGroup = iGroup + 1;
+                    self.Expressions(iGroup) = child.Expression;
+                    self.ChildGroups{iGroup} = {};
+                elseif isa(child, "LElseNode")
+                    iGroup = iGroup + 1;
+                    self.ChildGroups{iGroup} = {};
+                else
+                    self.ChildGroups{iGroup}{end + 1} = child;
+                end
+            end
+        end
+
         function str = render(self, context)
-            str = "";
-            if evalin_struct(self.Expression, context)
-                for k = 1:numel(self.Children)
-                    if isa(self.Children{k}, "LElseNode")
-                        break
-                    end
-                    str = str + render(self.Children{k}, context);
+            for iBranch = 1:numel(self.Expressions)
+                if evalin_struct(self.Expressions(iBranch), context)
+                    % {% elseif %} group
+                    self.Children = self.ChildGroups{iBranch};
+                    str = self.render_children(context);
+                    return
                 end
+            end
+
+            if numel(self.ChildGroups) > numel(self.Expressions)
+                % {% else %} group
+                self.Children = self.ChildGroups{end};
+                str = self.render_children(context);
             else
-                skip = true;
-                for k = 1:numel(self.Children)
-                    if skip
-                        skip = not(isa(self.Children{k}, "LElseNode"));
-                        continue
-                    end
-                    str = str + render(self.Children{k}, context);
-                end
+                str = "";
             end
         end
     end

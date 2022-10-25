@@ -1,5 +1,5 @@
-classdef LElseNode < LNode
-    %LELSENODE A silent output node that can only be placed inside an LIfNode.
+classdef LElseNode < LElseifNode
+    %LELSENODE A silent node that can only be placed inside an LIfNode.
     %
     %    {% if statement %}
     %        ...
@@ -8,10 +8,12 @@ classdef LElseNode < LNode
     %    {% end %}
     %
     % See also LIfNode, LNode
-    
+
+
+
     methods
         function self = LElseNode(~)
-            % ignore argument
+            self@LElseifNode("1");
         end
     end
 end
