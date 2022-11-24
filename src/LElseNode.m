@@ -9,8 +9,6 @@ classdef LElseNode < LElseifNode
     %
     % See also LIfNode, LNode
 
-
-
     methods
         function self = LElseNode(~)
             self@LElseifNode("1");

@@ -1,5 +1,5 @@
 
-classdef TestTemplate < matlab.unittest.TestCase
+classdef TemplateTests < matlab.unittest.TestCase
 
     properties (TestParameter)
        falsy_value = {false, 0, '', []};
@@ -132,6 +132,16 @@ classdef TestTemplate < matlab.unittest.TestCase
         function test_error_node(test)
             tpl = LTemplate("{% error 'my:id', 'message' %}");
             test.assertError(@() tpl.render(), "my:id");
+		end
+
+        function test_trim_whitespace(test)
+            test.assertEqual(LTemplate(" a {% if true %} b {% end %} c ").render(), " a  b  c ");
+            test.assertEqual(LTemplate(" a {%- if true %} b {% end %} c ").render(), " a b  c ");
+            test.assertEqual(LTemplate(" a {% if true -%} b {% end %} c ").render(), " a b  c ");
+            test.assertEqual(LTemplate(" a {% if true %} b {%- end %} c ").render(), " a  b c ");
+            test.assertEqual(LTemplate(" a {% if true %} b {% end -%} c ").render(), " a  b c ");
+            test.assertEqual(LTemplate(" a {%- if true -%} b {% end %} c ").render(), " ab  c ");
+            test.assertEqual(LTemplate(" a {%- if true -%} b {%- end -%} c ").render(), " abc ");
 		end
     end
 

@@ -18,7 +18,7 @@ classdef LForNode < LNode
     methods
         function self = LForNode(fragment)
             self.CreatesScope = true;
-            matches = regexp(fragment, "^\s*(?<lhs>.*?)\s*(?:in|=)\s*(?<rhs>.*)\s*$", "names");
+            matches = regexp(fragment, "^\s*(?<lhs>.*?)\s*(?:\sin\s|=)\s*(?<rhs>.*)\s*$", "names");
             if isempty(matches)
                 error("Lobster:TemplateSyntaxError", "{%% for %s %%} is invalid syntax.", fragment);
             end

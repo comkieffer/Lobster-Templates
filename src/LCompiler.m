@@ -6,7 +6,7 @@ classdef LCompiler < handle
     end
 
     properties (Access = private, Constant)
-        TOKEN_REGEX = "\{\{(?![\{%#])\s*(.*?)\s*(?<![\}%#])\}\}|\{%\s*(.*?)\s*%\}|\{#\s*(.*?)\s*#\}"
+        TOKEN_REGEX = "\{\{(?![\{%#])\s*(.*?)\s*(?<![\}%#])\}\}|\{%-?\s*(.*?)\s*-?%\}|\{#\s*(.*?)\s*#\}"
     end
 
     methods
@@ -23,24 +23,34 @@ classdef LCompiler < handle
         function root = compile(self)
             stack = {LRoot()};
             debug = "";
+            fragments = self.make_fragments();
+            trimTrail = [fragments(2:end).TrimBefore, false];
+            trimFront = [false, fragments(1:end-1).TrimAfter];
 
-            for fragment = self.make_fragments()
-                switch fragment.Type
+            for k = 1:numel(fragments)
+                switch fragments(k).Type
                 case LFRAGMENT_TYPE.BLOCK_END
                     assert(numel(stack) > 1, "Lobster:NestingError", "Too many {%%end%%} in template. Syntax tree:\n\n%s", debug);
                     end_scope(stack{end});
                     stack(end) = [];
                     debug = debug + ")";
                 case LFRAGMENT_TYPE.TEXT
-                    if fragment.Text ~= ""
-                        stack{end}.Children{end + 1} = LTextNode(fragment.Text);
+                    text = fragments(k).Text;
+                    if trimFront(k)
+                        text = strip(text, "left");
+                    end
+                    if trimTrail(k)
+                        text = strip(text, "right");
+                    end
+                    if text ~= ""
+                        stack{end}.Children{end + 1} = LTextNode(text);
                         debug = debug + " ";
                     end
                 case LFRAGMENT_TYPE.VAR
-                    stack{end}.Children{end + 1} = LVarNode(fragment.Text);
+                    stack{end}.Children{end + 1} = LVarNode(fragments(k).Text);
                     debug = debug + "_";
                 case LFRAGMENT_TYPE.BLOCK_START
-                    [type, rest] = strtok(fragment.Text, " ");
+                    [type, rest] = strtok(fragments(k).Text, " ");
                     node = feval(regexprep(type, "^(\w)(\w+)$", "L${upper($1)}$2Node"), rest);
                     stack{end}.Children{end + 1} = node;
                     debug = debug + type;
@@ -62,20 +72,24 @@ classdef LCompiler < handle
         function fragments = make_fragments(self)
             [vars, text] = regexp(self.Template, self.TOKEN_REGEX, "match", "split");
             vars = arrayfun(@create_fragment, vars);
-            text = arrayfun(@(t) LFragment(LFRAGMENT_TYPE.TEXT, t), text);
+            text = arrayfun(@(t) LFragment(LFRAGMENT_TYPE.TEXT, t, false, false), text);
             fragments = [text(1), reshape([vars; text(2:end)], 1, [])];
 
             function fragment = create_fragment(raw)
                 if startsWith(raw, "{{")
                     type = LFRAGMENT_TYPE.VAR;
+                    trim = {false, false};
                 elseif startsWith(raw, "{#")
                     type = LFRAGMENT_TYPE.COMMENT;
-                elseif startsWith(raw, regexpPattern("{%\s*end"))
+                    trim = {false, false};
+                elseif startsWith(raw, regexpPattern("{%-?\s*end"))
                     type = LFRAGMENT_TYPE.BLOCK_END;
+                    trim = {startsWith(raw, "{%-"), endsWith(raw, "-%}")};
                 elseif startsWith(raw, "{%")
                     type = LFRAGMENT_TYPE.BLOCK_START;
+                    trim = {startsWith(raw, "{%-"), endsWith(raw, "-%}")};
                 end
-                fragment = LFragment(type, regexprep(raw, self.TOKEN_REGEX, "$1"));
+                fragment = LFragment(type, regexprep(raw, self.TOKEN_REGEX, "$1"), trim{:});
             end
         end
     end
