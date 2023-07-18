@@ -161,3 +161,15 @@ To set temporary variables in the context, use either `let` or `with`:
     {% end %}
 
 This node is a scoped node, so make sure to place an `{% end %}` node where needed.
+
+## Whitespace Control
+
+This template engine also support a simplified feature set of the original Jinja whitespace control.
+By adding a minus character to either end of a block definition, the whitespace before or after
+the block will be removed:
+
+    {%- if condition %}
+        Content without trailing whitespace
+    {%- else -%}
+        Content without leading or trailing whitespace
+    {%- end %}
