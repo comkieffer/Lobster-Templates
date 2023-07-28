@@ -45,18 +45,18 @@ classdef TemplateTests < matlab.unittest.TestCase
             context.var = 1;
             tpl = LTemplate("{{ var }} is cool");
             test.assertEqual(tpl.render(context), "1 is cool");
-		end
+        end
 
-		function test_var_with_map_access(test)
+        function test_var_with_map_access(test)
             context.var = containers.Map('some_key', 'the value');
             tpl = LTemplate("{{ var('some_key') }} is cool");
             test.assertEqual(tpl.render(context), "the value is cool");
-		end
+        end
 
-		function test_undefined_var_error(test)
+        function test_undefined_var_error(test)
             tpl = LTemplate("{{ abc }} is cool");
-			test.assertError(@() tpl.render(), "MATLAB:UndefinedFunction");
-		end
+            test.assertError(@() tpl.render(), "MATLAB:UndefinedFunction");
+        end
 
         function test_if_true_with_no_context(test)
             tpl = LTemplate("{% if true %}You should see this{% endif %}");
@@ -76,12 +76,12 @@ classdef TemplateTests < matlab.unittest.TestCase
         function test_if_false_with_else(test)
            tpl = LTemplate("{% if false %}Show this{% else %}Not this{% end %}");
            test.assertEqual(tpl.render(), "Not this");
-		end
+        end
 
-		function test_if_with_conditional(test)
+        function test_if_with_conditional(test)
             tpl = LTemplate("{% if length(1:5) > 4 %}You should see this{% endif %}");
             test.assertEqual(tpl.render(), "You should see this");
-		end
+        end
 
         function test_for_with_array(test)
             tpl = LTemplate("{% for k in 1:5 %}{{ k }} {% end %}");
@@ -115,24 +115,24 @@ classdef TemplateTests < matlab.unittest.TestCase
             context.collection = struct([]);
             tpl = LTemplate("{% for k in collection %}{{ k.val }} {% end %}");
             test.assertEqual(tpl.render(context), "");
-		end
+        end
 
         function test_let_replaces_temporarily(test)
             context.var = 42;
             tpl = LTemplate("{{ var }} {% let var = 43 %}{{ var }}{% end %} {{ var }}");
             test.assertEqual(tpl.render(context), "42 43 42");
-		end
+        end
 
         function test_with_is_alias_for_let(test)
             context.var = 42;
             tpl = LTemplate("{{ var }} {% with var = 43 %}{{ var }}{% end %} {{ var }}");
             test.assertEqual(tpl.render(context), "42 43 42");
-		end
+        end
 
         function test_error_node(test)
             tpl = LTemplate("{% error 'my:id', 'message' %}");
             test.assertError(@() tpl.render(), "my:id");
-		end
+        end
 
         function test_trim_whitespace(test)
             test.assertEqual(LTemplate(" a {% if true %} b {% end %} c ").render(), " a  b  c ");
@@ -142,7 +142,7 @@ classdef TemplateTests < matlab.unittest.TestCase
             test.assertEqual(LTemplate(" a {% if true %} b {% end -%} c ").render(), " a  b c ");
             test.assertEqual(LTemplate(" a {%- if true -%} b {% end %} c ").render(), " ab  c ");
             test.assertEqual(LTemplate(" a {%- if true -%} b {%- end -%} c ").render(), " abc ");
-		end
+        end
     end
 
     methods (Test, ParameterCombination='sequential')
@@ -157,5 +157,5 @@ classdef TemplateTests < matlab.unittest.TestCase
             tpl = LTemplate("{% if var %}You should see this{% endif %}");
             test.assertEqual(tpl.render(context), "You should see this");
         end
-	end
+    end
 end
