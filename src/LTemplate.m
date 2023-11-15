@@ -1,30 +1,29 @@
-
 classdef LTemplate < handle
-   
-    properties
-       root;
+    %LTEMPLATE Base class for string templates.
+    %
+    %    template = LTemplate(jinja_markup)
+    %    template.render(context)
+    %
+    % See also LFileTemplate
+    
+    properties (SetAccess = immutable)
+       Root (1,1) LRoot
     end
     
     methods
-        function self = LTemplate(template_string)
-            if iscell(template_string)
-                template_string = strjoin(template_string, '\n');
+        function self = LTemplate(template)
+            if nargin > 0
+                self.Root = LCompiler(template).compile();
             end
-            assert(ischar(template_string), ...
-                'template_string must be a string or a cellarray of strings.');
-            
-            self.root = LCompiler(template_string).compile();
         end
         
         function str = render(self, context)
-            if ~exist('context', 'var')
-                context = struct();
+            arguments
+                self
+                context (1,1) struct = struct()
             end
             
-            str = self.root.render(context);
-            str = strrep(str, '{#', '{');
-            str = strrep(str, '#}', '}');
+            str = self.Root.render(context);
         end
     end
-    
 end

@@ -2,6 +2,7 @@
 The MIT License (MIT)
 
 Copyright (c) 2016 com_kieffer
+Copyright (c) 2022 fschwaiger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

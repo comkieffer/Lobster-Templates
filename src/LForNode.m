@@ -1,64 +1,47 @@
-
 classdef LForNode < LNode
-    
+    %LFORNODE Renders children in a FOR loop.
+    %
+    %    {% for lhs = rhs %}
+    %        ...
+    %    {% end %}
+    %
+    % The right hand side of the expression can by any numerical, object or cell array.
+    % The loop will iterate over all elements and render its children for each.
+    %
+    % See also LNode
+
     properties
-        lhs = ''; 
-        rhs = '';
+        LHS (1,1) string
+        RHS (1,1) string
     end
-    
-    methods 
+
+    methods
         function self = LForNode(fragment)
-            self@LNode(fragment);
-            self.creates_scope = true;
-        end
-        
-        function process_fragment(self, fragment)
-            matches = regexp(fragment, '^(.*?) in (.*)$', 'tokens');
-           
-            if length(matches{1}) ~=  2
-                error('Lobster:TemplateSyntaxError', ...
-                    '<%s> seems like invalid syntax', fragment);
+            self.CreatesScope = true;
+            matches = regexp(fragment, "^\s*(?<lhs>.*?)\s*(?:\sin\s|=)\s*(?<rhs>.*)\s*$", "names");
+            if isempty(matches)
+                error("Lobster:TemplateSyntaxError", "{%% for %s %%} is invalid syntax.", fragment);
             end
-            
-            self.lhs = strtrim(matches{1}{1});
-            self.rhs = strtrim(matches{1}{2});
+            self.LHS = matches.lhs;
+            self.RHS = matches.rhs;
         end
-        
+
         function str = render(self, context)
-            collection = eval_with_context(self.rhs, context);
-            
-            % Ensure that the collection to be iterated over is 1D
-            if size(collection, 1) > 1
-                mat_size = arrayfun(@num2str, size(collection), 'UniformOutput', false);
-                error('Lobster:TemplateSyntaxError', ...
-                    'Expected range for ''for'' loop to be an array, instead it was a %s matrix.', strjoin(mat_size, 'x'));
-            end                    
-                 
-            str = '';
-            for k = 1:length(collection)
-               context.loop_idx__ = k;
-               
-               if iscell(collection)
-                   loop_variable = collection{k};
-               else
-                   loop_variable = collection(k);
-               end
-               
-               context.(self.lhs) = loop_variable;
-               
-               new_str = self.render_children(context);
-			   % Don't use strcat beacause it silently chops whitespace from the
-			   % end of the string.
-               str = [str, new_str];
+            collection = evalin_struct(self.RHS, context);
+
+            str = "";
+            n = numel(collection);
+            isCell = iscell(collection);
+            context.last_loop_idx__ = n;
+            for k = 1:n
+                context.loop_idx__ = k;
+                if isCell
+                    context.(self.LHS) = collection{k};
+                else
+                    context.(self.LHS) = collection(k);
+                end
+                str = str + self.render_children(context);
             end
         end
-        
-        function enter_scope(~)
-        end
-        
-        function exit_scope(~)
-        end
-            
     end
-    
 end

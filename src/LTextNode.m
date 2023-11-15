@@ -1,22 +1,19 @@
-
 classdef LTextNode < LNode
+    %LTEXTNODE Rendering node for text output.
+    %
+    % See also LNode
     
     properties
-       text = ''; 
+        Text (1,1) string
     end
     
     methods
         function self = LTextNode(fragment)
-           self@LNode(fragment); 
-        end
-        
-        function process_fragment(self, fragment)
-            self.text = fragment;
+            self.Text = fragment;
         end
         
         function str = render(self, ~)
-           str = self.text; 
+            str = self.Text; 
         end
     end
-    
 end
