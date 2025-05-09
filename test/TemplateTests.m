@@ -1,5 +1,6 @@
-
-classdef TemplateTests < matlab.unittest.TestCase
+classdef (SharedTestFixtures = { ...
+            matlab.unittest.fixtures.ProjectFixture(fileparts(fileparts(mfilename("fullpath")))) ...
+        }) TemplateTests < matlab.unittest.TestCase
 
     properties (TestParameter)
        falsy_value = {false, 0, '', []};

@@ -12,11 +12,12 @@ classdef LAssertNode < LNode
     
     methods
         function self = LAssertNode(fragment)
-            self.Expression = "assert(" + fragment + ")";
+            self@LNode(fragment);
+            self.Expression = "assert(" + fragment.Text + ")";
         end
         
         function str = render(self, context)
-            evalin_struct(self.Expression, context);
+            evalin_struct(self.Expression, context, self.Fragment);
             str = "";
         end
     end

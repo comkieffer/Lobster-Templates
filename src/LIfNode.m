@@ -18,8 +18,10 @@ classdef LIfNode < LNode
 
     methods
         function self = LIfNode(fragment)
+            self@LNode(fragment);
+            
             self.CreatesScope = true;
-            self.Expressions = fragment;
+            self.Expressions = fragment.Text;
             self.ChildGroups = {{}};
         end
 
@@ -42,18 +44,16 @@ classdef LIfNode < LNode
 
         function str = render(self, context)
             for iBranch = 1:numel(self.Expressions)
-                if evalin_struct(self.Expressions(iBranch), context)
+                if evalin_struct(self.Expressions(iBranch), context, self.Fragment)
                     % {% elseif %} group
-                    self.Children = self.ChildGroups{iBranch};
-                    str = self.render_children(context);
+                    str = self.render_children(context, self.ChildGroups{iBranch});
                     return
                 end
             end
 
             if numel(self.ChildGroups) > numel(self.Expressions)
                 % {% else %} group
-                self.Children = self.ChildGroups{end};
-                str = self.render_children(context);
+                str = self.render_children(context, self.ChildGroups{end});
             else
                 str = "";
             end

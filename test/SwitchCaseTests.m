@@ -1,4 +1,6 @@
-classdef SwitchCaseTests < matlab.unittest.TestCase
+classdef (SharedTestFixtures = { ...
+            matlab.unittest.fixtures.ProjectFixture(fileparts(fileparts(mfilename("fullpath")))) ...
+        }) SwitchCaseTests < matlab.unittest.TestCase
 
     methods (Test)
         function it_renders_numerical_switch(test)

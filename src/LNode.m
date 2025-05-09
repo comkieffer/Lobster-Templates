@@ -7,9 +7,14 @@ classdef (Abstract) LNode < handle
     properties
         CreatesScope (1,1) logical = false
         Children (1,:) cell
+        Fragment
     end
 
     methods
+        function self = LNode(fragment)
+            self.Fragment = fragment;
+        end
+        
         function end_scope(~)
             % stub
         end
@@ -18,10 +23,14 @@ classdef (Abstract) LNode < handle
             str = render_children(self, context);
         end
 
-        function str = render_children(self, context)
+        function str = render_children(self, context, children)
+            if nargin < 3
+                children = self.Children;
+            end
+            
             str = "";
-            for k = 1:numel(self.Children)
-                str = str + render(self.Children{k}, context);
+            for k = 1:numel(children)
+                str = str + render(children{k}, context);
             end
         end
     end

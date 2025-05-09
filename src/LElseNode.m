@@ -10,8 +10,9 @@ classdef LElseNode < LElseifNode
     % See also LIfNode, LNode
 
     methods
-        function self = LElseNode(~)
-            self@LElseifNode("1");
+        function self = LElseNode(fragment)
+            fragment.Text = "1";
+            self@LElseifNode(fragment);
         end
     end
 end

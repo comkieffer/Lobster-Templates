@@ -1,4 +1,6 @@
-classdef ConditionalTests < matlab.unittest.TestCase
+classdef (SharedTestFixtures = { ...
+            matlab.unittest.fixtures.ProjectFixture(fileparts(fileparts(mfilename("fullpath")))) ...
+        }) ConditionalTests < matlab.unittest.TestCase
 
     methods (Test)
         function it_renders_if(test)

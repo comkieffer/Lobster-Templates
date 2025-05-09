@@ -19,8 +19,9 @@ classdef LElseifNode < LNode
     end
 
     methods
-        function self = LElseifNode(expression)
-            self.Expression = expression;
+        function self = LElseifNode(fragment)
+            self@LNode(fragment);
+            self.Expression = fragment.Text;
         end
     end
 end

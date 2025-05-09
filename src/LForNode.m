@@ -17,17 +17,19 @@ classdef LForNode < LNode
 
     methods
         function self = LForNode(fragment)
+            self@LNode(fragment);
+            
             self.CreatesScope = true;
-            matches = regexp(fragment, "^\s*(?<lhs>.*?)\s*(?:\sin\s|=)\s*(?<rhs>.*)\s*$", "names");
+            matches = regexp(fragment.Text, "^\s*(?<lhs>.*?)\s*(?:\sin\s|=)\s*(?<rhs>.*)\s*$", "names");
             if isempty(matches)
-                error("Lobster:TemplateSyntaxError", "{%% for %s %%} is invalid syntax.", fragment);
+                error("Lobster:TemplateSyntaxError", "{%% for %s %%} is invalid syntax.", fragment.Text);
             end
             self.LHS = matches.lhs;
             self.RHS = matches.rhs;
         end
 
         function str = render(self, context)
-            collection = evalin_struct(self.RHS, context);
+            collection = evalin_struct(self.RHS, context, self.Fragment);
 
             str = "";
             n = numel(collection);

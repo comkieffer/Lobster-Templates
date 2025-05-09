@@ -18,11 +18,18 @@ classdef LVarNode < LNode
 
     methods
         function self = LVarNode(fragment)
-            self.Expression = fragment;
+            self@LNode(fragment);
+            self.Expression = fragment.Text;
         end
 
         function str = render(self, context)
-            str = string(evalin_struct(self.Expression, context));
+            str = string(evalin_struct(self.Expression, context, self.Fragment));
+            
+            if not(isscalar(str))
+                error("Lobster:InvalidOutput", "Fragment {{%s}} does not " + ...
+                    "evaluate to a scalar value. Instead, its output was %s.", ...
+                    self.Expression, jsonencode(str));
+            end
             
             if ismissing(str)
                 str = "<missing>";

@@ -22,8 +22,9 @@ classdef LSwitchNode < LNode
 
     methods
         function self = LSwitchNode(fragment)
+            self@LNode(fragment);
             self.CreatesScope = true;
-            self.Expression = fragment;
+            self.Expression = fragment.Text;
             self.ChildGroups = {};
         end
 
@@ -48,20 +49,18 @@ classdef LSwitchNode < LNode
         end
 
         function str = render(self, context)
-            value = evalin_struct(self.Expression, context);
+            value = evalin_struct(self.Expression, context, self.Fragment);
             for iBranch = 1:numel(self.Values)
                 % {% case expression %} group
-                if value == evalin_struct(self.Values(iBranch), context)
-                    self.Children = self.ChildGroups{iBranch};
-                    str = self.render_children(context);
+                if value == evalin_struct(self.Values(iBranch), context, self.Fragment)
+                    str = self.render_children(context, self.ChildGroups{iBranch});
                     return
                 end
             end
 
             if numel(self.ChildGroups) > numel(self.Values)
                 % {% otherwise %} group
-                self.Children = self.ChildGroups{end};
-                str = self.render_children(context);
+                str = self.render_children(context, self.ChildGroups{end});
             else
                 str = "";
             end

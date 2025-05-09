@@ -26,6 +26,13 @@ function template = LFileTemplate(filename, searchPath, verbose)
     %   searchPath("alias") = "templates/myfile.template";
     %   template = LFileTemplate("alias", searchPath)
     %
+    % You can pass a special empty string, "", to get an empty template. This is
+    % needed for inclusion lists with silent fail behaviour. The following first
+    % example renders an empty block, while the second line throws an error:
+    %
+    %   {% include ["does-not-exist", ""] %}
+    %   {% include "does-not-exist" %}
+    %
     % If you pass in true as the third argument, the template file registration
     % will be printed to the console. Use this to debug if your template overrides
     % are not working as expected.
@@ -76,19 +83,24 @@ function template = LFileTemplate(filename, searchPath, verbose)
     end
     
     function template = compile(filename)
-        try
-            filename = registeredFiles(filename);
-        catch
-            filename = which(filename);
-            
-            if isempty(dir(filename))
-                template = LTemplate();
-                return
-            end 
+        if filename == ""
+            template = LTemplate();
+            return
         end
         
         try
-            template = LTemplate(fileread(filename));
+            filename = registeredFiles(filename);
+        catch
+            fullFilename = which(filename);
+            if isempty(dir(fullFilename))
+                error("Lobster:NoSuchTemplate", ...
+                    "Could not find template file %s", filename);
+            end 
+            filename = fullFilename;
+        end
+        
+        try
+            template = LTemplate(fileread(filename), filename);
         catch reason
             error("Lobster:FileCompilationError", ...
                 "Error while compiling template file %s: %s %s", ...
